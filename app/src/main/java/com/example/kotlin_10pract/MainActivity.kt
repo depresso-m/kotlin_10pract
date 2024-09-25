@@ -7,6 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,9 +43,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ImageLoaderApp() {
     var url by remember { mutableStateOf("") }
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var imageBitmaps by remember { mutableStateOf(listOf<Bitmap>()) }
     val context = LocalContext.current
-
 
     Column(
         modifier = Modifier
@@ -65,7 +66,9 @@ fun ImageLoaderApp() {
             onClick = {
                 if (url.isNotEmpty()) {
                     loadAndSaveImage(context, url) { bitmap ->
-                        imageBitmap = bitmap
+                        if (bitmap != null) {
+                            imageBitmaps = imageBitmaps + bitmap
+                        }
                     }
                 }
             },
@@ -76,22 +79,27 @@ fun ImageLoaderApp() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                imageBitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Загруженное изображение",
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } ?: Text("Изображение не загружено")
+            items(imageBitmaps) { bitmap ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .height(300.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Загруженное изображение",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
         }
     }
